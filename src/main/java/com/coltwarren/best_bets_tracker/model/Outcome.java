@@ -1,6 +1,7 @@
 package com.coltwarren.best_bets_tracker.model;
 
 import com.coltwarren.best_bets_tracker.model.enums.BetResult;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ public class Outcome {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prediction_id", nullable = false, unique = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "outcome", "snapshot"})
     private Prediction prediction;
 
     // === Game Result ===

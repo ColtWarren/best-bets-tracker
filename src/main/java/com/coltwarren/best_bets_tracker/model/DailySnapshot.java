@@ -1,5 +1,6 @@
 package com.coltwarren.best_bets_tracker.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,6 +51,7 @@ public class DailySnapshot {
     private BigDecimal netProfitUnits;
 
     @OneToMany(mappedBy = "snapshot", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("snapshot-predictions")
     private List<Prediction> predictions = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)

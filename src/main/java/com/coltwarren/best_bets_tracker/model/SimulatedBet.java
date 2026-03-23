@@ -1,6 +1,7 @@
 package com.coltwarren.best_bets_tracker.model;
 
 import com.coltwarren.best_bets_tracker.model.enums.BetResult;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,10 +28,12 @@ public class SimulatedBet {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prediction_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "outcome", "snapshot"})
     private Prediction prediction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sportsbook_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private MissouriSportsbook sportsbook;
 
     @Column(nullable = false, precision = 10, scale = 2)

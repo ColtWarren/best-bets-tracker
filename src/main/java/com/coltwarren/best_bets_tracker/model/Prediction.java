@@ -3,6 +3,8 @@ package com.coltwarren.best_bets_tracker.model;
 import com.coltwarren.best_bets_tracker.model.enums.BetResult;
 import com.coltwarren.best_bets_tracker.model.enums.BetType;
 import com.coltwarren.best_bets_tracker.model.enums.Sport;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +33,7 @@ public class Prediction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "snapshot_id", nullable = false)
+    @JsonBackReference("snapshot-predictions")
     private DailySnapshot snapshot;
 
     // === Game Info ===
@@ -106,6 +109,7 @@ public class Prediction {
     // === Relationship ===
 
     @OneToOne(mappedBy = "prediction", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "prediction"})
     private Outcome outcome;
 
     @PrePersist
