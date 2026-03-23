@@ -40,10 +40,12 @@ public class PredictionCaptureService {
 
     public PredictionCaptureService(
             @Value("${main-app.base-url}") String mainAppBaseUrl,
+            @Value("${internal.api.key:}") String internalApiKey,
             PredictionRepository predictionRepository,
             DailySnapshotRepository snapshotRepository) {
         this.webClient = WebClient.builder()
                 .baseUrl(mainAppBaseUrl)
+                .defaultHeader("X-Internal-API-Key", internalApiKey)
                 .codecs(config -> config.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
                 .build();
         this.predictionRepository = predictionRepository;
