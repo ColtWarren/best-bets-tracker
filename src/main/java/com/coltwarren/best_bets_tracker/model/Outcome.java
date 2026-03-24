@@ -90,10 +90,10 @@ public class Outcome {
         this.betResult = result;
         this.settledAt = LocalDateTime.now();
         this.actualResult = buildResultString();
-        this.profitUnits = prediction.calculateProfitUnits();
 
-        // Sync status back to prediction
+        // Set prediction status BEFORE calculating profit (it checks status)
         prediction.setStatus(result);
+        this.profitUnits = prediction.calculateProfitUnits();
 
         // CLV tracking
         if (prediction.getClosingOdds() != null) {

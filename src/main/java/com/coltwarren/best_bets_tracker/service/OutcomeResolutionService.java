@@ -186,10 +186,19 @@ public class OutcomeResolutionService {
     private Map<String, Object> findGameOnEspn(Prediction prediction) {
         try {
             String espnPath = "/" + prediction.getSport().getEspnPath() + "/scoreboard";
-            log.debug("Fetching ESPN scoreboard: {}", espnPath);
+
+            // ESPN only shows today's games by default — pass the game date
+            // to fetch the correct day's scoreboard (format: yyyyMMdd)
+            String gameDate = prediction.getEventStartTime()
+                    .toLocalDate()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+            log.debug("Fetching ESPN scoreboard: {} for date {}", espnPath, gameDate);
 
             Map<String, Object> scoreboard = espnClient.get()
-                    .uri(espnPath)
+                    .uri(uriBuilder -> uriBuilder
+                            .path(espnPath)
+                            .queryParam("dates", gameDate)
+                            .build())
                     .retrieve()
                     .bodyToMono(Map.class)
                     .block(java.time.Duration.ofSeconds(10));
