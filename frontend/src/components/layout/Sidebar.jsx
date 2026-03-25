@@ -1,23 +1,26 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
 
 /**
  * Fixed left sidebar with navigation links.
  * Active link gets a purple highlight matching the cyberpunk theme.
  */
 export default function Sidebar() {
+  const { user, logout } = useAuth();
+
   const navItems = [
-    { path: '/',              icon: '📊', label: 'Dashboard' },
-    { path: '/predictions',   icon: '🎯', label: 'Predictions' },
-    { path: '/accuracy',      icon: '📈', label: 'Accuracy' },
-    { path: '/profitability', icon: '💰', label: 'Profitability' },
-    { path: '/snapshots',     icon: '📅', label: 'Daily History' },
-    { path: '/sportsbooks',   icon: '🏛️', label: 'Sportsbooks' },
+    { path: '/',              icon: '\u{1F4CA}', label: 'Dashboard' },
+    { path: '/predictions',   icon: '\u{1F3AF}', label: 'Predictions' },
+    { path: '/accuracy',      icon: '\u{1F4C8}', label: 'Accuracy' },
+    { path: '/profitability', icon: '\u{1F4B0}', label: 'Profitability' },
+    { path: '/snapshots',     icon: '\u{1F4C5}', label: 'Daily History' },
+    { path: '/sportsbooks',   icon: '\u{1F3DB}\uFE0F', label: 'Sportsbooks' },
   ];
 
   return (
     <aside style={styles.sidebar}>
       <div style={styles.logo}>
-        <span style={styles.logoIcon}>🎲</span>
+        <span style={styles.logoIcon}>{'\u{1F3B2}'}</span>
         <div>
           <div style={styles.logoTitle}>Best Bets</div>
           <div style={styles.logoSubtitle}>Tracker</div>
@@ -42,6 +45,15 @@ export default function Sidebar() {
       </nav>
 
       <div style={styles.footer}>
+        {user && (
+          <div style={styles.userInfo}>
+            {user.picture && (
+              <img src={user.picture} alt="" style={styles.avatar} referrerPolicy="no-referrer" />
+            )}
+            <div style={styles.userName}>{user.name}</div>
+            <button onClick={logout} style={styles.logoutBtn}>Sign out</button>
+          </div>
+        )}
         <div style={styles.footerText}>Missouri Legal</div>
         <div style={styles.footerSub}>Sportsbook Tracker</div>
       </div>
@@ -117,6 +129,35 @@ const styles = {
     padding: '16px 20px',
     borderTop: '1px solid rgba(124, 58, 237, 0.15)',
     textAlign: 'center',
+  },
+  userInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottom: '1px solid rgba(124, 58, 237, 0.1)',
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    border: '2px solid rgba(124, 58, 237, 0.3)',
+  },
+  userName: {
+    fontSize: '0.8rem',
+    color: '#94a3b8',
+  },
+  logoutBtn: {
+    background: 'none',
+    border: '1px solid rgba(124, 58, 237, 0.2)',
+    borderRadius: 6,
+    color: '#64748b',
+    fontSize: '0.7rem',
+    padding: '4px 12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
   },
   footerText: {
     fontSize: '0.75rem',

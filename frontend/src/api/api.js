@@ -5,12 +5,24 @@ import axios from 'axios';
  * All API calls go through this instance for consistent base URL and error handling.
  */
 const api = axios.create({
-  baseURL: 'http://localhost:8081/api',
+  baseURL: '/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Redirect to login on 401 (session expired or not authenticated)
+// Skip redirect for /auth/me — that 401 is expected when not logged in
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401 && !error.config.url?.includes('/auth/me')) {
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // === Predictions ===
 
