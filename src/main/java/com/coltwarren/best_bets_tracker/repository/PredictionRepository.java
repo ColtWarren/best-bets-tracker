@@ -99,6 +99,11 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
             @Param("minConf") BigDecimal minConf,
             @Param("maxConf") BigDecimal maxConf);
 
+    // === Dedup ===
+
+    boolean existsByHomeTeamIgnoreCaseAndAwayTeamIgnoreCaseAndSelectionIgnoreCase(
+            String homeTeam, String awayTeam, String selection);
+
     // === CLV ===
 
     @Query("SELECT COUNT(p) FROM Prediction p WHERE p.beatClosingLine = true")

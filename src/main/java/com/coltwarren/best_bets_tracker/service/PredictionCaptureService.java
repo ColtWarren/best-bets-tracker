@@ -108,23 +108,21 @@ public class PredictionCaptureService {
             return snapshotRepository.save(snapshot);
         }
 
-        // Get existing predictions for this snapshot to avoid duplicates
-        List<Prediction> existingPredictions = snapshot.getId() != null
-                ? predictionRepository.findBySnapshotId(snapshot.getId())
-                : List.of();
-
         List<Prediction> newPredictions = new ArrayList<>();
         int capturedCount = 0;
+        int skippedDupes = 0;
 
         for (Map<String, Object> bet : bets) {
             try {
-                // Skip if we already captured this exact matchup for this snapshot
+                // Skip if this matchup + selection already exists anywhere in the database
                 String homeTeam = getStringValue(bet, "homeTeam");
                 String awayTeam = getStringValue(bet, "awayTeam");
                 String selection = getStringValue(bet, "recommendation");
 
-                if (isDuplicate(existingPredictions, homeTeam, awayTeam, selection)) {
+                if (predictionRepository.existsByHomeTeamIgnoreCaseAndAwayTeamIgnoreCaseAndSelectionIgnoreCase(
+                        homeTeam, awayTeam, selection)) {
                     log.debug("Skipping duplicate: {} @ {} - {}", awayTeam, homeTeam, selection);
+                    skippedDupes++;
                     continue;
                 }
 
@@ -144,8 +142,8 @@ public class PredictionCaptureService {
             predictionRepository.saveAll(newPredictions);
         }
 
-        log.info("Captured {} new predictions for {} (total: {})",
-                capturedCount, date, snapshot.getTotalPicks());
+        log.info("Captured {} new predictions for {} ({} duplicates skipped, total: {})",
+                capturedCount, date, skippedDupes, snapshot.getTotalPicks());
 
         return snapshot;
     }
@@ -353,14 +351,6 @@ public class PredictionCaptureService {
      * Checks if a prediction with the same matchup and selection already exists
      * in the given list. Prevents duplicate captures if the service runs twice.
      */
-    private boolean isDuplicate(List<Prediction> existing, String homeTeam,
-                                String awayTeam, String selection) {
-        return existing.stream().anyMatch(p ->
-                p.getHomeTeam().equalsIgnoreCase(homeTeam)
-                        && p.getAwayTeam().equalsIgnoreCase(awayTeam)
-                        && p.getSelection().equalsIgnoreCase(selection));
-    }
-
     // === Parsing Helpers ===
 
     /**
