@@ -24,7 +24,7 @@ export default function PredictionsPage() {
       const { data } = await getPredictions(params);
       setPredictions(data);
     } catch (err) {
-      console.error('Failed to load predictions:', err);
+      setPredictions([]);
     }
     setLoading(false);
   };

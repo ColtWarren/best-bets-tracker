@@ -172,7 +172,7 @@ public class PredictionCaptureService {
                     .bodyToMono(Map.class)
                     .block(java.time.Duration.ofSeconds(60));
         } catch (Exception e) {
-            log.error("Error fetching best bets from main app: {}", e.getMessage());
+            log.error("Error fetching best bets from main app: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -245,33 +245,33 @@ public class PredictionCaptureService {
         if (selection.contains("over") || selection.contains("under")) {
             // Totals bet
             BigDecimal odds = selection.contains("over")
-                    ? getBigDecimalFromMap(bestOdds, "overOdds")
-                    : getBigDecimalFromMap(bestOdds, "underOdds");
+                    ? getBigDecimalValue(bestOdds, "overOdds")
+                    : getBigDecimalValue(bestOdds, "underOdds");
             String book = selection.contains("over")
-                    ? getStringFromMap(bestOdds, "overBook")
-                    : getStringFromMap(bestOdds, "underBook");
+                    ? getStringValue(bestOdds, "overBook")
+                    : getStringValue(bestOdds, "underBook");
             p.setOdds(odds != null ? odds : BigDecimal.ZERO);
             p.setSportsbook(book != null ? book : "Unknown");
         } else if (selection.contains("+") || selection.contains("-")) {
             // Spread bet — figure out if it's home or away spread
             boolean isHomeSpread = isHomeTeamSelection(selection, p.getHomeTeam());
             BigDecimal odds = isHomeSpread
-                    ? getBigDecimalFromMap(bestOdds, "homeSpreadOdds")
-                    : getBigDecimalFromMap(bestOdds, "awaySpreadOdds");
+                    ? getBigDecimalValue(bestOdds, "homeSpreadOdds")
+                    : getBigDecimalValue(bestOdds, "awaySpreadOdds");
             String book = isHomeSpread
-                    ? getStringFromMap(bestOdds, "homeSpreadBook")
-                    : getStringFromMap(bestOdds, "awaySpreadBook");
+                    ? getStringValue(bestOdds, "homeSpreadBook")
+                    : getStringValue(bestOdds, "awaySpreadBook");
             p.setOdds(odds != null ? odds : BigDecimal.ZERO);
             p.setSportsbook(book != null ? book : "Unknown");
         } else {
             // Moneyline — figure out home or away
             boolean isHomePick = isHomeTeamSelection(selection, p.getHomeTeam());
             BigDecimal odds = isHomePick
-                    ? getBigDecimalFromMap(bestOdds, "homeML")
-                    : getBigDecimalFromMap(bestOdds, "awayML");
+                    ? getBigDecimalValue(bestOdds, "homeML")
+                    : getBigDecimalValue(bestOdds, "awayML");
             String book = isHomePick
-                    ? getStringFromMap(bestOdds, "homeMLBook")
-                    : getStringFromMap(bestOdds, "awayMLBook");
+                    ? getStringValue(bestOdds, "homeMLBook")
+                    : getStringValue(bestOdds, "awayMLBook");
             p.setOdds(odds != null ? odds : BigDecimal.ZERO);
             p.setSportsbook(book != null ? book : "Unknown");
         }
@@ -282,16 +282,16 @@ public class PredictionCaptureService {
      * Uses the "outcome" field to determine which odds to grab.
      */
     private void extractSoccerOdds(Map<String, Object> bestOdds, Prediction p) {
-        String outcome = getStringFromMap(bestOdds, "outcome");
+        String outcome = getStringValue(bestOdds, "outcome");
         if ("HOME_WIN".equals(outcome)) {
-            p.setOdds(getBigDecimalFromMap(bestOdds, "homeWinOdds"));
-            p.setSportsbook(getStringFromMap(bestOdds, "homeWinBook"));
+            p.setOdds(getBigDecimalValue(bestOdds, "homeWinOdds"));
+            p.setSportsbook(getStringValue(bestOdds, "homeWinBook"));
         } else if ("DRAW".equals(outcome)) {
-            p.setOdds(getBigDecimalFromMap(bestOdds, "drawOdds"));
-            p.setSportsbook(getStringFromMap(bestOdds, "drawBook"));
+            p.setOdds(getBigDecimalValue(bestOdds, "drawOdds"));
+            p.setSportsbook(getStringValue(bestOdds, "drawBook"));
         } else {
-            p.setOdds(getBigDecimalFromMap(bestOdds, "awayWinOdds"));
-            p.setSportsbook(getStringFromMap(bestOdds, "awayWinBook"));
+            p.setOdds(getBigDecimalValue(bestOdds, "awayWinOdds"));
+            p.setSportsbook(getStringValue(bestOdds, "awayWinBook"));
         }
         if (p.getOdds() == null) p.setOdds(BigDecimal.ZERO);
         if (p.getSportsbook() == null) p.setSportsbook("Unknown");
@@ -414,12 +414,4 @@ public class PredictionCaptureService {
         }
     }
 
-    private String getStringFromMap(Map<String, Object> map, String key) {
-        Object val = map.get(key);
-        return val != null ? val.toString() : null;
-    }
-
-    private BigDecimal getBigDecimalFromMap(Map<String, Object> map, String key) {
-        return getBigDecimalValue(map, key);
-    }
 }

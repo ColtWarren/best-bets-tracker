@@ -98,6 +98,7 @@ public class AccuracyAnalyticsService {
         stats.put("pending", pending);
         stats.put("wins", wins);
         stats.put("losses", losses);
+        stats.put("pushes", settled - wins - losses);
         stats.put("winRate", winRate != null ? round(winRate * 100) : 0.0);
         stats.put("netUnits", netUnits);
         stats.put("roi", roi);
@@ -287,7 +288,7 @@ public class AccuracyAnalyticsService {
     @Transactional
     public AccuracyReport generateAllTimeReport() {
         Map<String, Object> stats = getOverallStats();
-        return saveReport("ALL_TIME", LocalDate.of(2026, 1, 1), LocalDate.now(), null, stats);
+        return saveReport("ALL_TIME", LocalDate.of(2020, 1, 1), LocalDate.now(), null, stats);
     }
 
     /**
@@ -300,7 +301,7 @@ public class AccuracyAnalyticsService {
         for (Map<String, Object> sportData : getStatsBySport()) {
             Sport sport = Sport.valueOf((String) sportData.get("sport"));
             AccuracyReport report = saveReport("ALL_TIME",
-                    LocalDate.of(2026, 1, 1), LocalDate.now(), sport, sportData);
+                    LocalDate.of(2020, 1, 1), LocalDate.now(), sport, sportData);
             reports.add(report);
         }
         return reports;
@@ -342,7 +343,7 @@ public class AccuracyAnalyticsService {
         report.setTotalPicks(getIntStat(stats, "settled"));
         report.setWins(getIntStat(stats, "wins"));
         report.setLosses(getIntStat(stats, "losses"));
-        report.setPushes(0); // TODO: track pushes in stats
+        report.setPushes(getIntStat(stats, "pushes"));
         report.setWinRate(getBigDecimalStat(stats, "winRate"));
         report.setRoiPercent(getBigDecimalStat(stats, "roi"));
         report.setNetUnits(getBigDecimalStat(stats, "netUnits"));

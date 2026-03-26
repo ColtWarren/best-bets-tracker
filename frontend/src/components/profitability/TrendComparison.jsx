@@ -18,14 +18,14 @@ export default function TrendComparison({ trends }) {
           </tr>
         </thead>
         <tbody>
-          {trends.map((trend, i) => {
+          {trends.map((trend) => {
             const winRateClass = trend.winRate > 52 ? 'positive'
               : trend.winRate < 48 ? 'negative' : 'neutral';
             const unitsClass = Number(trend.netUnits) > 0 ? 'positive'
               : Number(trend.netUnits) < 0 ? 'negative' : 'neutral';
 
             return (
-              <tr key={i}>
+              <tr key={trend.period}>
                 <td>{trend.period}</td>
                 <td style={{ fontFamily: 'var(--font-mono)' }}>
                   {trend.wins}-{trend.losses}

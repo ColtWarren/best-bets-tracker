@@ -30,8 +30,8 @@ export default function AccuracyPage() {
       setBySport(sportRes.data);
       setByType(typeRes.data);
       setByConfidence(confRes.data);
-    } catch (err) {
-      console.error('Failed to load accuracy data:', err);
+    } catch {
+      // Error state handled by null/empty checks in render
     }
     setLoading(false);
   };

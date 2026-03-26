@@ -16,8 +16,8 @@ export default function SnapshotsPage() {
     try {
       const { data } = await getSnapshots();
       setSnapshots(data);
-    } catch (err) {
-      console.error('Failed to load snapshots:', err);
+    } catch {
+      setSnapshots([]);
     }
     setLoading(false);
   };

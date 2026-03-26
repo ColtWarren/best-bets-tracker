@@ -30,6 +30,11 @@ public interface SimulatedBetRepository extends JpaRepository<SimulatedBet, Long
             "WHERE s.sportsbook.id = :sportsbookId AND s.profitLoss IS NOT NULL")
     BigDecimal calculateProfitLossBySportsbook(@org.springframework.data.repository.query.Param("sportsbookId") Long sportsbookId);
 
+    @Query("SELECT s.sportsbook.name, COALESCE(SUM(s.profitLoss), 0), COUNT(s) " +
+            "FROM SimulatedBet s WHERE s.profitLoss IS NOT NULL " +
+            "GROUP BY s.sportsbook.name ORDER BY SUM(s.profitLoss) DESC")
+    List<Object[]> getProfitBySportsbookAggregated();
+
     // === Counts ===
 
     long countByStatus(BetResult status);

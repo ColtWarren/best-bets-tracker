@@ -17,8 +17,8 @@ export default function SportsbooksPage() {
     try {
       const { data } = await getActiveSportsbooks();
       setSportsbooks(data);
-    } catch (err) {
-      console.error('Failed to load sportsbooks:', err);
+    } catch {
+      setSportsbooks([]);
     }
     setLoading(false);
   };

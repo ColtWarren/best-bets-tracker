@@ -149,9 +149,15 @@ public class OutcomeResolutionService {
             return null;
         }
 
-        // Extract final scores
-        int homeScore = (int) gameData.get("homeScore");
-        int awayScore = (int) gameData.get("awayScore");
+        // Extract final scores (null-safe to avoid NPE from unboxing)
+        Object homeObj = gameData.get("homeScore");
+        Object awayObj = gameData.get("awayScore");
+        if (homeObj == null || awayObj == null) {
+            log.warn("Missing score data for game: {}", prediction.getEventName());
+            return null;
+        }
+        int homeScore = ((Number) homeObj).intValue();
+        int awayScore = ((Number) awayObj).intValue();
 
         // Determine the bet result based on bet type and final score
         BetResult result = determineBetResult(prediction, homeScore, awayScore);

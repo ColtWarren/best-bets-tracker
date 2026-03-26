@@ -30,8 +30,8 @@ export default function ProfitabilityPage() {
       setBankroll(bankRes.data);
       setTrends(trendRes.data);
       setSportsbookPL(bookRes.data);
-    } catch (err) {
-      console.error('Failed to load profitability data:', err);
+    } catch {
+      // Error state handled by null/empty checks in render
     }
     setLoading(false);
   };

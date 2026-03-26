@@ -247,25 +247,15 @@ public class SimulationService {
      * @return list of maps with {sportsbook, profitLoss, betCount}
      */
     public List<Map<String, Object>> getProfitBySportsbook() {
-        List<MissouriSportsbook> books = sportsbookRepository.findByActiveTrue();
         List<Map<String, Object>> results = new ArrayList<>();
 
-        for (MissouriSportsbook book : books) {
-            BigDecimal pl = simulatedBetRepository.calculateProfitLossBySportsbook(book.getId());
-            List<SimulatedBet> bets = simulatedBetRepository.findBySportsbookId(book.getId());
-
-            if (bets.isEmpty()) continue;
-
+        for (Object[] row : simulatedBetRepository.getProfitBySportsbookAggregated()) {
             Map<String, Object> entry = new HashMap<>();
-            entry.put("sportsbook", book.getName());
-            entry.put("profitLoss", pl);
-            entry.put("betCount", bets.size());
+            entry.put("sportsbook", row[0]);
+            entry.put("profitLoss", row[1]);
+            entry.put("betCount", row[2]);
             results.add(entry);
         }
-
-        // Sort by profit descending
-        results.sort((a, b) -> ((BigDecimal) b.get("profitLoss"))
-                .compareTo((BigDecimal) a.get("profitLoss")));
 
         return results;
     }
