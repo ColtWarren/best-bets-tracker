@@ -101,8 +101,8 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
 
     // === Dedup ===
 
-    boolean existsByHomeTeamIgnoreCaseAndAwayTeamIgnoreCaseAndSelectionIgnoreCase(
-            String homeTeam, String awayTeam, String selection);
+    boolean existsByHomeTeamIgnoreCaseAndAwayTeamIgnoreCaseAndSelectionIgnoreCaseAndEventStartTime(
+            String homeTeam, String awayTeam, String selection, LocalDateTime eventStartTime);
 
     // === CLV ===
 

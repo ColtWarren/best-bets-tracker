@@ -114,14 +114,15 @@ public class PredictionCaptureService {
 
         for (Map<String, Object> bet : bets) {
             try {
-                // Skip if this matchup + selection already exists anywhere in the database
+                // Skip if this matchup + selection + event time already exists
                 String homeTeam = getStringValue(bet, "homeTeam");
                 String awayTeam = getStringValue(bet, "awayTeam");
                 String selection = getStringValue(bet, "recommendation");
+                LocalDateTime eventStartTime = parseGameTime(getStringValue(bet, "gameTime"));
 
-                if (predictionRepository.existsByHomeTeamIgnoreCaseAndAwayTeamIgnoreCaseAndSelectionIgnoreCase(
-                        homeTeam, awayTeam, selection)) {
-                    log.debug("Skipping duplicate: {} @ {} - {}", awayTeam, homeTeam, selection);
+                if (predictionRepository.existsByHomeTeamIgnoreCaseAndAwayTeamIgnoreCaseAndSelectionIgnoreCaseAndEventStartTime(
+                        homeTeam, awayTeam, selection, eventStartTime)) {
+                    log.debug("Skipping duplicate: {} @ {} - {} ({})", awayTeam, homeTeam, selection, eventStartTime);
                     skippedDupes++;
                     continue;
                 }
