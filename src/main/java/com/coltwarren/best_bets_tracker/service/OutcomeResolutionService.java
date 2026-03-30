@@ -173,8 +173,8 @@ public class OutcomeResolutionService {
         // Save the updated prediction status
         predictionRepository.save(prediction);
 
-        // Update the DailySnapshot tallies
-        updateSnapshotTallies(prediction.getSnapshot(), result);
+        // Update the DailySnapshot tallies including profit
+        updateSnapshotTallies(prediction.getSnapshot(), result, outcome.getProfitUnits());
 
         log.info("Settled: {} → {} (Score: {}-{})",
                 prediction.getEventName(), result, homeScore, awayScore);
@@ -355,10 +355,9 @@ public class OutcomeResolutionService {
     }
 
     /**
-     * Updates the DailySnapshot win/loss/push tallies after a prediction is settled.
-     * Also recalculates the snapshot's aggregate stats (win rate, profit).
+     * Updates the DailySnapshot win/loss/push tallies and net profit after a prediction is settled.
      */
-    private void updateSnapshotTallies(DailySnapshot snapshot, BetResult result) {
+    private void updateSnapshotTallies(DailySnapshot snapshot, BetResult result, BigDecimal profitUnits) {
         if (snapshot == null) return;
 
         switch (result) {
@@ -366,6 +365,12 @@ public class OutcomeResolutionService {
             case LOST -> snapshot.setLosses(snapshot.getLosses() + 1);
             case PUSH -> snapshot.setPushes(snapshot.getPushes() + 1);
         }
+
+        // Update net profit (was previously missing — profit stayed at stale/zero values)
+        BigDecimal currentProfit = snapshot.getNetProfitUnits() != null
+                ? snapshot.getNetProfitUnits() : BigDecimal.ZERO;
+        snapshot.setNetProfitUnits(currentProfit.add(
+                profitUnits != null ? profitUnits : BigDecimal.ZERO));
 
         snapshot.recalculateStats();
         snapshotRepository.save(snapshot);
