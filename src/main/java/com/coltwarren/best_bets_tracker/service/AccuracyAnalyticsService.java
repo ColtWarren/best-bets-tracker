@@ -278,6 +278,66 @@ public class AccuracyAnalyticsService {
     }
 
     // =========================================================================
+    // DATE-SCOPED STATS — stats for a single day
+    // =========================================================================
+
+    /**
+     * Returns accuracy stats scoped to predictions whose eventStartTime
+     * falls on the given date. Used by daily report generation.
+     *
+     * @param date the date to scope stats to
+     * @return map with the same keys as getOverallStats(), but only for that day
+     */
+    public Map<String, Object> getStatsForDate(LocalDate date) {
+        Map<String, Object> stats = new HashMap<>();
+
+        LocalDateTime dayStart = date.atStartOfDay();
+        LocalDateTime dayEnd = date.plusDays(1).atStartOfDay();
+
+        long wins = predictionRepository.countWinsByDate(dayStart, dayEnd);
+        long losses = predictionRepository.countLossesByDate(dayStart, dayEnd);
+        long settled = predictionRepository.countSettledByDate(dayStart, dayEnd);
+        long totalPicks = predictionRepository.countByDate(dayStart, dayEnd);
+        long pending = predictionRepository.countPendingByDate(dayStart, dayEnd);
+
+        Double winRate = predictionRepository.calculateWinRateByDate(dayStart, dayEnd);
+        BigDecimal netUnits = outcomeRepository.calculateProfitUnitsByDate(dayStart, dayEnd);
+
+        BigDecimal roi = BigDecimal.ZERO;
+        if (settled > 0) {
+            roi = netUnits
+                    .divide(BigDecimal.valueOf(settled), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        long clvCount = predictionRepository.countBeatClosingLineByDate(dayStart, dayEnd);
+        long clvTotal = predictionRepository.countWithClosingOddsByDate(dayStart, dayEnd);
+        BigDecimal clvRate = BigDecimal.ZERO;
+        if (clvTotal > 0) {
+            clvRate = BigDecimal.valueOf(clvCount)
+                    .divide(BigDecimal.valueOf(clvTotal), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        stats.put("totalPicks", totalPicks);
+        stats.put("settled", settled);
+        stats.put("pending", pending);
+        stats.put("wins", wins);
+        stats.put("losses", losses);
+        stats.put("pushes", settled - wins - losses);
+        stats.put("winRate", winRate != null ? round(winRate * 100) : 0.0);
+        stats.put("netUnits", netUnits);
+        stats.put("roi", roi);
+        stats.put("clvRate", clvRate);
+        stats.put("avgOdds", predictionRepository.calculateAvgOddsByDate(dayStart, dayEnd));
+        stats.put("avgConfidence", predictionRepository.calculateAvgConfidenceByDate(dayStart, dayEnd));
+
+        return stats;
+    }
+
+    // =========================================================================
     // REPORT GENERATION — pre-compute stats for fast dashboard loading
     // =========================================================================
 
@@ -313,7 +373,7 @@ public class AccuracyAnalyticsService {
      */
     @Transactional
     public AccuracyReport generateDailyReport(LocalDate date) {
-        Map<String, Object> stats = getOverallStats();
+        Map<String, Object> stats = getStatsForDate(date);
         return saveReport("DAILY", date, date, null, stats);
     }
 

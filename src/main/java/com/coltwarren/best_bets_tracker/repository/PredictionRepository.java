@@ -123,6 +123,40 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
     @Query("SELECT AVG(p.confidence) FROM Prediction p WHERE p.sport = :sport")
     Double calculateAvgConfidenceBySport(@Param("sport") Sport sport);
 
+    // === Date-Scoped Aggregates (for daily reports) ===
+
+    @Query("SELECT COUNT(p) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end AND p.status = 'WON'")
+    long countWinsByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(p) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end AND p.status = 'LOST'")
+    long countLossesByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(p) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end AND p.status IN ('WON', 'LOST')")
+    long countSettledByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(p) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end")
+    long countByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(p) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end AND p.status = 'PENDING'")
+    long countPendingByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT CAST(COUNT(CASE WHEN p.status = 'WON' THEN 1 END) AS double) " +
+            "/ NULLIF(COUNT(CASE WHEN p.status IN ('WON', 'LOST') THEN 1 END), 0) " +
+            "FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end")
+    Double calculateWinRateByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(p) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end AND p.beatClosingLine = true")
+    long countBeatClosingLineByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(p) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end AND p.closingOdds IS NOT NULL")
+    long countWithClosingOddsByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT AVG(p.odds) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end AND p.status IN ('WON', 'LOST')")
+    Double calculateAvgOddsByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT AVG(p.confidence) FROM Prediction p WHERE p.eventStartTime >= :start AND p.eventStartTime < :end")
+    Double calculateAvgConfidenceByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     // === Time-Scoped Aggregates ===
 
     @Query("SELECT CAST(COUNT(CASE WHEN p.status = 'WON' THEN 1 END) AS double) " +

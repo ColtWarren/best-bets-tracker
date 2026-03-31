@@ -34,6 +34,10 @@ public interface OutcomeRepository extends JpaRepository<Outcome, Long> {
             "WHERE o.settledAt >= :since")
     BigDecimal calculateProfitUnitsSince(@Param("since") LocalDateTime since);
 
+    @Query("SELECT COALESCE(SUM(o.profitUnits), 0) FROM Outcome o " +
+            "WHERE o.prediction.eventStartTime >= :start AND o.prediction.eventStartTime < :end")
+    BigDecimal calculateProfitUnitsByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     // === CLV Aggregates ===
 
     @Query("SELECT COUNT(o) FROM Outcome o WHERE o.beatClosingLine = true")
