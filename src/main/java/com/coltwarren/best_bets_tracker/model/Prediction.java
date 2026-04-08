@@ -78,6 +78,9 @@ public class Prediction {
     @Column(columnDefinition = "TEXT")
     private String aiReasoning;
 
+    @Column(name = "assessment_type", length = 30)
+    private String assessmentType;
+
     // === Odds Source ===
 
     @Column(length = 100)
