@@ -1,6 +1,7 @@
 package com.coltwarren.best_bets_tracker.config;
 
 import com.coltwarren.best_bets_tracker.service.AccuracyAnalyticsService;
+import com.coltwarren.best_bets_tracker.service.MlbAssessmentCaptureService;
 import com.coltwarren.best_bets_tracker.service.OutcomeResolutionService;
 import com.coltwarren.best_bets_tracker.service.PredictionCaptureService;
 import com.coltwarren.best_bets_tracker.service.SimulationService;
@@ -39,15 +40,18 @@ public class ScheduledJobs {
     private final OutcomeResolutionService resolutionService;
     private final AccuracyAnalyticsService analyticsService;
     private final SimulationService simulationService;
+    private final MlbAssessmentCaptureService mlbAssessmentCaptureService;
 
     public ScheduledJobs(PredictionCaptureService captureService,
                          OutcomeResolutionService resolutionService,
                          AccuracyAnalyticsService analyticsService,
-                         SimulationService simulationService) {
+                         SimulationService simulationService,
+                         MlbAssessmentCaptureService mlbAssessmentCaptureService) {
         this.captureService = captureService;
         this.resolutionService = resolutionService;
         this.analyticsService = analyticsService;
         this.simulationService = simulationService;
+        this.mlbAssessmentCaptureService = mlbAssessmentCaptureService;
     }
 
     /**
@@ -76,6 +80,30 @@ public class ScheduledJobs {
             log.info("Created {} simulated bets", simBets);
         } catch (Exception e) {
             log.error("Daily capture failed: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * MLB ASSESSMENT CAPTURE — Runs at 11:00 AM Central Time every day.
+     *
+     * Pulls MLB matchup assessments from the main sports-betting-analytics
+     * app and stores them as predictions with assessmentType = "MLB_ASSESSMENT".
+     *
+     * 11 AM CT is chosen because:
+     * - Starting pitchers are typically confirmed by then
+     * - MLB games usually start ~1-7 PM CT, giving time for pre-game analysis
+     * - Runs after the 9 AM general capture to avoid overlap
+     *
+     * Cron: second minute hour day month weekday
+     */
+    @Scheduled(cron = "0 0 11 * * *", zone = "America/Chicago")
+    public void captureMlbAssessments() {
+        log.info("=== SCHEDULED: MLB assessment capture ===");
+        try {
+            var result = mlbAssessmentCaptureService.captureToday();
+            log.info("MLB assessments: {} saved, {} skipped", result.saved(), result.skipped());
+        } catch (Exception e) {
+            log.error("MLB assessment capture failed: {}", e.getMessage(), e);
         }
     }
 
